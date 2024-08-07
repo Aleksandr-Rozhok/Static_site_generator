@@ -1,8 +1,9 @@
 from src.htmlnode import LeafNode
 from enum import Enum
 
-def text_node_to_html_node(text_node):
-    class TextTypeNode(Enum):
+from src.textnode import TextNode
+
+class TextTypeNode(Enum):
         text_type_text = "text"
         text_type_bold = "bold"
         text_type_italic = "italic"
@@ -13,7 +14,8 @@ def text_node_to_html_node(text_node):
         @classmethod
         def has_value(cls, value):
             return any(value == item.value for item in cls)
-      
+
+def text_node_to_html_node(text_node):  
     if text_node.text_type == TextTypeNode.text_type_text.value:
         return LeafNode(text_node.text)
     elif text_node.text_type == TextTypeNode.text_type_bold.value:
@@ -28,4 +30,23 @@ def text_node_to_html_node(text_node):
         return LeafNode("img", " ", {"src": text_node.url, "alt": text_node.text})
     elif not TextTypeNode.has_value(text_node.text_type):
         raise TypeError("There no your type of text")
-    
+
+def split_nodes_delimiter(old_nodes, delimiter, text_type):
+    if old_nodes.text_type != TextTypeNode.text_type_text.value:
+        return [old_nodes]
+    elif delimiter not in old_nodes.text:
+        raise ValueError("There is no delimiter in this TextNode")
+    else:
+        list_of_substr = old_nodes.text.split(delimiter)
+        if list_of_substr[-1] == "":
+            list_of_substr.pop()
+  
+        result = []
+
+        for index in range(0, len(list_of_substr)):
+            if index % 2 == 0:
+                result.append(TextNode(list_of_substr[index], "text"))
+            else:
+                result.append(TextNode(list_of_substr[index], text_type))
+        
+        return result

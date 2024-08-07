@@ -1,7 +1,7 @@
 import unittest
 
 from src.textnode import TextNode
-from src.utils import text_node_to_html_node
+from src.utils import split_nodes_delimiter, text_node_to_html_node
 
 class TestUtils(unittest.TestCase):
     def test_func_text_node_to_html_node(self):
@@ -40,6 +40,65 @@ class TestUtils(unittest.TestCase):
             text_node_to_html_node(text_node1)
 
         self.assertEqual(str(context.exception), "There no your type of text")
+
+    def test_split_nodes_delimiter(self):
+        text_node1 = TextNode("This is text with a `code block` word", "text")
+        text_node2 = TextNode("This is text with a `code block` word", "bold")
+        text_node3 = TextNode("This is text with a **bold block** word", "text")
+        text_node4 = TextNode("This is text with a *italic block* word", "text")
+        text_node5 = TextNode("This is text with a *italic block* word, which added *twice*", "text")
+        text_node6 = TextNode("This is text with a ```code block``` word", "text")
+
+        excepted_result1 = [
+            TextNode("This is text with a ", "text"),
+            TextNode("code block", "code"),
+            TextNode(" word", "text"),
+        ]
+        excepted_result2 = [TextNode("This is text with a `code block` word", "bold")]
+        excepted_result3 = [
+            TextNode("This is text with a ", "text"),
+            TextNode("bold block", "bold"),
+            TextNode(" word", "text"),
+        ]
+        excepted_result4 = [
+            TextNode("This is text with a ", "text"),
+            TextNode("italic block", "italic"),
+            TextNode(" word", "text"),
+        ]
+        excepted_result5 = [
+            TextNode("This is text with a ", "text"),
+            TextNode("italic block", "italic"),
+            TextNode(" word, which added ", "text"),
+            TextNode("twice", "italic"),
+        ]
+        excepted_result6 = [
+            TextNode("This is text with a ", "text"),
+            TextNode("code block", "code"),
+            TextNode(" word", "text"),
+        ]
+
+        test_case1 = split_nodes_delimiter(text_node1, "`", "code")
+        test_case2 = split_nodes_delimiter(text_node2, "`", "code")
+        test_case3 = split_nodes_delimiter(text_node3, "**", "bold")
+        test_case4 = split_nodes_delimiter(text_node4, "*", "italic")
+        test_case5 = split_nodes_delimiter(text_node5, "*", "italic")
+        test_case6 = split_nodes_delimiter(text_node6, "```", "code")
+
+        self.assertEqual(excepted_result1, test_case1)  
+        self.assertEqual(excepted_result2, test_case2)
+        self.assertEqual(excepted_result3, test_case3)
+        self.assertEqual(excepted_result4, test_case4)
+        self.assertEqual(excepted_result5, test_case5)
+        self.assertEqual(excepted_result6, test_case6)
+    
+    def test_split_nodes_without_delimiter(self):
+        text_node1 = TextNode("This is text with a `code block` word", "text")
+
+        with self.assertRaises(ValueError) as context:
+            split_nodes_delimiter(text_node1, "*", "italic")
+
+        self.assertEqual(str(context.exception), "There is no delimiter in this TextNode")
+
 
 
 if __name__ == "__main__":
