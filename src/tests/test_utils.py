@@ -1,7 +1,7 @@
 import unittest
 
 from src.textnode import TextNode
-from src.utils import extract_markdown_images, extract_markdown_links, split_nodes_delimiter, split_nodes_links, text_node_to_html_node
+from src.utils import extract_markdown_images, extract_markdown_links, split_nodes_delimiter, split_nodes_image, split_nodes_links, text_node_to_html_node
 
 class TestUtils(unittest.TestCase):
     def test_func_text_node_to_html_node(self):
@@ -162,10 +162,14 @@ class TestUtils(unittest.TestCase):
         text_node3 = TextNode(
         "This is text with a link [to boot dev](https://www.boot.dev), so it's all",
         "text")
+        text_node4 = TextNode(
+        "This is text with a link [to boot dev](https://www.boot.dev), so it's all",
+        "bold")
 
         test_case1 = split_nodes_links([text_node1])
         test_case2 = split_nodes_links([text_node2])
         test_case3 = split_nodes_links([text_node3])
+        test_case4 = split_nodes_links([text_node4])
 
         expected_result1 = [
             TextNode("This is text with a link ", "text"),
@@ -187,10 +191,66 @@ class TestUtils(unittest.TestCase):
             TextNode("to boot dev", "link", "https://www.boot.dev"),
             TextNode(", so it's all", "text"),
         ]
+        expected_result4 = [
+            TextNode(
+                "This is text with a link [to boot dev](https://www.boot.dev), so it's all",
+                "bold")
+        ]
 
         self.assertEqual(expected_result1, test_case1)
         self.assertEqual(expected_result2, test_case2)
         self.assertEqual(expected_result3, test_case3)
+        self.assertEqual(expected_result4, test_case4)
+
+    def test_split_nodes_image(self):
+        text_node1 = TextNode(
+            "This is text with a ![rick roll](https://i.imgur.com/aKaOqIh.gif) and ![obi wan](https://i.imgur.com/fJRm4Vk.jpeg)",
+            "text")
+        text_node2 = TextNode(
+            "![rick roll](https://i.imgur.com/aKaOqIh.gif) This is text with a img ![obi wan](https://i.imgur.com/fJRm4Vk.jpeg)",
+            "text")
+        text_node3 = TextNode(
+            "This is text with a ![rick roll](https://i.imgur.com/aKaOqIh.gif) and it's all",
+            "text")
+        text_node4 = TextNode(
+            "This is text with a ![rick roll](https://i.imgur.com/aKaOqIh.gif) and it's all",
+            "bold")
+        
+        test_case1 = split_nodes_image([text_node1])
+        test_case2 = split_nodes_image([text_node2])
+        test_case3 = split_nodes_image([text_node3])
+        test_case4 = split_nodes_image([text_node4])
+
+        expected_result1 = [
+            TextNode("This is text with a ", "text"),
+            TextNode("rick roll", "img", "https://i.imgur.com/aKaOqIh.gif"),
+            TextNode(" and ", "text"),
+            TextNode(
+                "obi wan", "img", "https://i.imgur.com/fJRm4Vk.jpeg"
+            ),
+        ]
+        expected_result2 = [
+            TextNode("rick roll", "img", "https://i.imgur.com/aKaOqIh.gif"),
+            TextNode(" This is text with a img ", "text"),
+            TextNode(
+                "obi wan", "img", "https://i.imgur.com/fJRm4Vk.jpeg"
+            ),
+        ]
+        expected_result3 = [
+            TextNode("This is text with a ", "text"),
+            TextNode("rick roll", "img", "https://i.imgur.com/aKaOqIh.gif"),
+            TextNode(" and it's all", "text"),
+        ]
+        expected_result4 = [
+            TextNode(
+            "This is text with a ![rick roll](https://i.imgur.com/aKaOqIh.gif) and it's all",
+            "bold")
+        ]
+
+        self.assertEqual(expected_result1, test_case1)
+        self.assertEqual(expected_result2, test_case2)
+        self.assertEqual(expected_result3, test_case3)
+        self.assertEqual(expected_result4, test_case4)
 
 
 if __name__ == "__main__":

@@ -115,3 +115,36 @@ def split_nodes_links(old_nodes):
                     links_count += 1
             
             return result
+
+def split_nodes_image(old_nodes):
+    for old_node in old_nodes:
+        if old_node.text_type != TextTypeNode.text_type_text.value:
+            return [old_node]
+        else:
+            arg_text = old_node.text
+            extracted_img = extract_markdown_images(old_node.text)
+            result = []
+            text_count = 0
+            img_count = 0
+            
+            for img in extracted_img:
+                arg_text = "".join(arg_text.split(img[0]))
+                arg_text = "".join(arg_text.split(img[1]))
+            
+            list_of_only_text = arg_text.split("![]()")
+
+            if list_of_only_text[-1] == "":
+                list_of_only_text.pop()
+
+            for index in range(0, len(list_of_only_text) + len(extracted_img)):
+                if index % 2 == 0:
+                    if list_of_only_text[text_count] == "":
+                        text_count += 1
+                    else:
+                        result.append(TextNode(list_of_only_text[text_count], "text"))
+                        text_count += 1
+                else:
+                    result.append(TextNode(extracted_img[img_count][0], "img", extracted_img[img_count][1]))
+                    img_count += 1
+            
+            return result
