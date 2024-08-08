@@ -1,7 +1,7 @@
 import unittest
 
 from src.textnode import TextNode
-from src.utils import split_nodes_delimiter, text_node_to_html_node
+from src.utils import extract_markdown_images, extract_markdown_links, split_nodes_delimiter, text_node_to_html_node
 
 class TestUtils(unittest.TestCase):
     def test_func_text_node_to_html_node(self):
@@ -49,29 +49,29 @@ class TestUtils(unittest.TestCase):
         text_node5 = TextNode("This is text with a *italic block* word, which added *twice*", "text")
         text_node6 = TextNode("This is text with a ```code block``` word", "text")
 
-        excepted_result1 = [
+        expected_result = [
             TextNode("This is text with a ", "text"),
             TextNode("code block", "code"),
             TextNode(" word", "text"),
         ]
-        excepted_result2 = [TextNode("This is text with a `code block` word", "bold")]
-        excepted_result3 = [
+        expected_result2 = [TextNode("This is text with a `code block` word", "bold")]
+        expected_result3 = [
             TextNode("This is text with a ", "text"),
             TextNode("bold block", "bold"),
             TextNode(" word", "text"),
         ]
-        excepted_result4 = [
+        expected_result4 = [
             TextNode("This is text with a ", "text"),
             TextNode("italic block", "italic"),
             TextNode(" word", "text"),
         ]
-        excepted_result5 = [
+        expected_result5 = [
             TextNode("This is text with a ", "text"),
             TextNode("italic block", "italic"),
             TextNode(" word, which added ", "text"),
             TextNode("twice", "italic"),
         ]
-        excepted_result6 = [
+        expected_result6 = [
             TextNode("This is text with a ", "text"),
             TextNode("code block", "code"),
             TextNode(" word", "text"),
@@ -84,12 +84,12 @@ class TestUtils(unittest.TestCase):
         test_case5 = split_nodes_delimiter(text_node5, "*", "italic")
         test_case6 = split_nodes_delimiter(text_node6, "```", "code")
 
-        self.assertEqual(excepted_result1, test_case1)  
-        self.assertEqual(excepted_result2, test_case2)
-        self.assertEqual(excepted_result3, test_case3)
-        self.assertEqual(excepted_result4, test_case4)
-        self.assertEqual(excepted_result5, test_case5)
-        self.assertEqual(excepted_result6, test_case6)
+        self.assertEqual(expected_result, test_case1)  
+        self.assertEqual(expected_result2, test_case2)
+        self.assertEqual(expected_result3, test_case3)
+        self.assertEqual(expected_result4, test_case4)
+        self.assertEqual(expected_result5, test_case5)
+        self.assertEqual(expected_result6, test_case6)
     
     def test_split_nodes_without_delimiter(self):
         text_node1 = TextNode("This is text with a `code block` word", "text")
@@ -99,6 +99,51 @@ class TestUtils(unittest.TestCase):
 
         self.assertEqual(str(context.exception), "There is no delimiter in this TextNode")
 
+    def test_extract_markdown_images(self):
+        text1 = "This is text with a ![rick roll](https://i.imgur.com/aKaOqIh.gif) and ![obi wan](https://i.imgur.com/fJRm4Vk.jpeg)"
+        text2 = "This is text with a ![dart maul](https://vk.ru/aKaOqIh.png) and ![obi wan](https://pinterest.com/fJRm4Vk.jpeg)"
+        text3 = "This is text with a ![dart maul](https://vk.ru/aKaOqIh.png) and it's all"
+
+        test_case1 = extract_markdown_images(text1)
+        test_case2 = extract_markdown_images(text2)
+        test_case3 = extract_markdown_images(text3)
+        
+        expected_result1 = [("rick roll", "https://i.imgur.com/aKaOqIh.gif"), ("obi wan", "https://i.imgur.com/fJRm4Vk.jpeg")]
+        expected_result2 = [("dart maul", "https://vk.ru/aKaOqIh.png"), ("obi wan", "https://pinterest.com/fJRm4Vk.jpeg")]
+        expected_result3 = [("dart maul", "https://vk.ru/aKaOqIh.png")]
+
+        self.assertEqual(expected_result1, test_case1) 
+        self.assertEqual(expected_result2, test_case2)
+        self.assertEqual(expected_result3, test_case3)
+    
+    def test_extract_markdown_images_without_img(self):
+        text1 = "This is text with a `code block` word"
+
+        with self.assertRaises(ValueError) as context:
+            extract_markdown_images(text1)
+
+        self.assertEqual(str(context.exception), "There is no images here")
+    
+    def test_extract_markdown_links(self):
+        text1 = "This is text with a link [to boot dev](https://www.boot.dev) and [to youtube](https://www.youtube.com/@bootdotdev)"
+        text2 = "This is text with a link [to boot dev](https://www.boot.dev)"
+
+        test_case1 = extract_markdown_links(text1)
+        test_case2 = extract_markdown_links(text2)
+        
+        expected_result1 = [("to boot dev", "https://www.boot.dev"), ("to youtube", "https://www.youtube.com/@bootdotdev")]
+        expected_result2 = [("to boot dev", "https://www.boot.dev")]
+
+        self.assertEqual(expected_result1, test_case1)
+        self.assertEqual(expected_result2, test_case2) 
+    
+    def test_extract_markdown_images_without_links(self):
+        text1 = "This is text with a `code block` word"
+
+        with self.assertRaises(ValueError) as context:
+            extract_markdown_links(text1)
+
+        self.assertEqual(str(context.exception), "There is no links here")
 
 
 if __name__ == "__main__":

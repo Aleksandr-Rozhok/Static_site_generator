@@ -1,5 +1,6 @@
 from src.htmlnode import LeafNode
 from enum import Enum
+import re
 
 from src.textnode import TextNode
 
@@ -50,3 +51,29 @@ def split_nodes_delimiter(old_nodes, delimiter, text_type):
                 result.append(TextNode(list_of_substr[index], text_type))
         
         return result
+    
+def extract_markdown_images(text):
+    matches_alt_img = re.findall(r"!\[(.*?)\]", text)
+    matches_href_img = re.findall(r"https:\/\/[^\s\/$.?#].[^\s\)]*", text)
+    result = []
+
+    if not matches_alt_img and not matches_href_img:
+        raise ValueError("There is no images here")
+
+    for index in range(0, len(matches_alt_img)):
+        result.append((matches_alt_img[index], matches_href_img[index]))
+
+    return result
+
+def extract_markdown_links(text):
+    matches_url_text = re.findall(r"\[(.*?)\]", text)
+    matches_url = re.findall(r"https:\/\/[^\s\/$.?#].[^\s\)]*", text)
+    result = []
+
+    if not matches_url_text and not matches_url:
+        raise ValueError("There is no links here")
+
+    for index in range(0, len(matches_url_text)):
+        result.append((matches_url_text[index], matches_url[index]))
+
+    return result
