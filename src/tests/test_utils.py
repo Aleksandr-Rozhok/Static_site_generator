@@ -1,7 +1,7 @@
 import unittest
 
 from src.textnode import TextNode
-from src.utils import extract_markdown_images, extract_markdown_links, split_nodes_delimiter, text_node_to_html_node
+from src.utils import extract_markdown_images, extract_markdown_links, split_nodes_delimiter, split_nodes_links, text_node_to_html_node
 
 class TestUtils(unittest.TestCase):
     def test_func_text_node_to_html_node(self):
@@ -42,14 +42,15 @@ class TestUtils(unittest.TestCase):
         self.assertEqual(str(context.exception), "There no your type of text")
 
     def test_split_nodes_delimiter(self):
-        text_node1 = TextNode("This is text with a `code block` word", "text")
-        text_node2 = TextNode("This is text with a `code block` word", "bold")
-        text_node3 = TextNode("This is text with a **bold block** word", "text")
-        text_node4 = TextNode("This is text with a *italic block* word", "text")
-        text_node5 = TextNode("This is text with a *italic block* word, which added *twice*", "text")
-        text_node6 = TextNode("This is text with a ```code block``` word", "text")
+        text_node1 = [TextNode("This is text with a `code block` word", "text")]
+        text_node2 = [TextNode("This is text with a `code block` word", "bold")]
+        text_node3 = [TextNode("This is text with a **bold block** word", "text")]
+        text_node4 = [TextNode("This is text with a *italic block* word", "text")]
+        text_node5 = [TextNode("This is text with a *italic block* word, which added *twice*", "text")]
+        text_node6 = [TextNode("This is text with a ```code block``` word", "text")]
+        text_node7 = [TextNode("```code block``` This is text with a word", "text")]
 
-        expected_result = [
+        expected_result1 = [
             TextNode("This is text with a ", "text"),
             TextNode("code block", "code"),
             TextNode(" word", "text"),
@@ -76,6 +77,10 @@ class TestUtils(unittest.TestCase):
             TextNode("code block", "code"),
             TextNode(" word", "text"),
         ]
+        expected_result7 = [
+            TextNode("code block", "code"),
+            TextNode(" This is text with a word", "text"),
+        ]
 
         test_case1 = split_nodes_delimiter(text_node1, "`", "code")
         test_case2 = split_nodes_delimiter(text_node2, "`", "code")
@@ -83,16 +88,18 @@ class TestUtils(unittest.TestCase):
         test_case4 = split_nodes_delimiter(text_node4, "*", "italic")
         test_case5 = split_nodes_delimiter(text_node5, "*", "italic")
         test_case6 = split_nodes_delimiter(text_node6, "```", "code")
+        test_case7 = split_nodes_delimiter(text_node7, "```", "code")
 
-        self.assertEqual(expected_result, test_case1)  
+        self.assertEqual(expected_result1, test_case1)  
         self.assertEqual(expected_result2, test_case2)
         self.assertEqual(expected_result3, test_case3)
         self.assertEqual(expected_result4, test_case4)
         self.assertEqual(expected_result5, test_case5)
         self.assertEqual(expected_result6, test_case6)
+        self.assertEqual(expected_result7, test_case7)
     
     def test_split_nodes_without_delimiter(self):
-        text_node1 = TextNode("This is text with a `code block` word", "text")
+        text_node1 = [TextNode("This is text with a `code block` word", "text")]
 
         with self.assertRaises(ValueError) as context:
             split_nodes_delimiter(text_node1, "*", "italic")
@@ -144,6 +151,46 @@ class TestUtils(unittest.TestCase):
             extract_markdown_links(text1)
 
         self.assertEqual(str(context.exception), "There is no links here")
+
+    def test_split_node_links(self):
+        text_node1 = TextNode(
+        "This is text with a link [to boot dev](https://www.boot.dev) and [to youtube](https://www.youtube.com/@bootdotdev)",
+        "text")
+        text_node2 = TextNode(
+        "[to boot dev](https://www.boot.dev) This is text with a link and [to youtube](https://www.youtube.com/@bootdotdev)",
+        "text")
+        text_node3 = TextNode(
+        "This is text with a link [to boot dev](https://www.boot.dev), so it's all",
+        "text")
+
+        test_case1 = split_nodes_links([text_node1])
+        test_case2 = split_nodes_links([text_node2])
+        test_case3 = split_nodes_links([text_node3])
+
+        expected_result1 = [
+            TextNode("This is text with a link ", "text"),
+            TextNode("to boot dev", "link", "https://www.boot.dev"),
+            TextNode(" and ", "text"),
+            TextNode(
+                "to youtube", "link", "https://www.youtube.com/@bootdotdev"
+            ),
+        ]
+        expected_result2 = [
+            TextNode("to boot dev", "link", "https://www.boot.dev"),
+            TextNode(" This is text with a link and ", "text"),
+            TextNode(
+                "to youtube", "link", "https://www.youtube.com/@bootdotdev"
+            ),
+        ]
+        expected_result3 = [
+            TextNode("This is text with a link ", "text"),
+            TextNode("to boot dev", "link", "https://www.boot.dev"),
+            TextNode(", so it's all", "text"),
+        ]
+
+        self.assertEqual(expected_result1, test_case1)
+        self.assertEqual(expected_result2, test_case2)
+        self.assertEqual(expected_result3, test_case3)
 
 
 if __name__ == "__main__":
