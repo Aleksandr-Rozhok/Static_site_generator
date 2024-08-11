@@ -34,17 +34,19 @@ def text_node_to_html_node(text_node):
         raise TypeError("There no your type of text")
 
 def split_nodes_delimiter(old_nodes, delimiter, text_type):
+    result = []
+    all_delimiters = ["*", "**", "`", "```"]
+    
+    if delimiter not in all_delimiters:
+        raise ValueError(f"There is no {delimiter} delimiter")
+
     for old_node in old_nodes:
         if old_node.text_type != TextTypeNode.text_type_text.value:
-            return [old_node]
-        elif delimiter not in old_node.text:
-            raise ValueError("There is no delimiter in this TextNode")
+            result.append(old_node)
         else:
             list_of_substr = old_node.text.split(delimiter)
             if list_of_substr[-1] == "":
                 list_of_substr.pop()
-    
-            result = []
 
             for index in range(0, len(list_of_substr)):
                 if index % 2 == 0:
@@ -55,15 +57,12 @@ def split_nodes_delimiter(old_nodes, delimiter, text_type):
                 else:
                     result.append(TextNode(list_of_substr[index], text_type))
             
-            return result
+    return result
     
 def extract_markdown_images(text):
     matches_alt_img = re.findall(r"!\[(.*?)\]", text)
     matches_href_img = re.findall(r"https:\/\/[^\s\/$.?#].[^\s\)]*", text)
     result = []
-
-    if not matches_alt_img and not matches_href_img:
-        raise ValueError("There is no images here")
 
     for index in range(0, len(matches_alt_img)):
         result.append((matches_alt_img[index], matches_href_img[index]))
@@ -75,22 +74,20 @@ def extract_markdown_links(text):
     matches_url = re.findall(r"https:\/\/[^\s\/$.?#].[^\s\)]*", text)
     result = []
 
-    if not matches_url_text and not matches_url:
-        raise ValueError("There is no links here")
-
     for index in range(0, len(matches_url_text)):
         result.append((matches_url_text[index], matches_url[index]))
 
     return result
 
 def split_nodes_links(old_nodes):
+    result = []
+
     for old_node in old_nodes:
         if old_node.text_type != TextTypeNode.text_type_text.value:
-            return [old_node]
+            result.append(old_node)
         else:
             arg_text = old_node.text
             extracted_links = extract_markdown_links(old_node.text)
-            result = []
             text_count = 0
             links_count = 0
             
@@ -114,16 +111,16 @@ def split_nodes_links(old_nodes):
                     result.append(TextNode(extracted_links[links_count][0], "link", extracted_links[links_count][1]))
                     links_count += 1
             
-            return result
+    return result
 
 def split_nodes_image(old_nodes):
+    result = []
     for old_node in old_nodes:
         if old_node.text_type != TextTypeNode.text_type_text.value:
-            return [old_node]
+            result.append(old_node)
         else:
             arg_text = old_node.text
             extracted_img = extract_markdown_images(old_node.text)
-            result = []
             text_count = 0
             img_count = 0
             
@@ -147,4 +144,16 @@ def split_nodes_image(old_nodes):
                     result.append(TextNode(extracted_img[img_count][0], "img", extracted_img[img_count][1]))
                     img_count += 1
             
-            return result
+    return result
+
+def text_to_textnodes(text):
+    new_text_node = TextNode(text, TextTypeNode.text_type_text.value)
+    nodes_with_code = split_nodes_delimiter([new_text_node], "`", TextTypeNode.text_type_code.value)
+    nodes_with_bold_text = split_nodes_delimiter(nodes_with_code, "**", TextTypeNode.text_type_bold.value)
+    nodes_with_italic_text = split_nodes_delimiter(nodes_with_bold_text, "*", TextTypeNode.text_type_italic.value)
+    nodes_with_img = split_nodes_image(nodes_with_italic_text)
+    totally_divided_nodes = split_nodes_links(nodes_with_img)
+    
+    return totally_divided_nodes
+
+    

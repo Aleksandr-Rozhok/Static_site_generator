@@ -1,7 +1,7 @@
 import unittest
 
 from src.textnode import TextNode
-from src.utils import extract_markdown_images, extract_markdown_links, split_nodes_delimiter, split_nodes_image, split_nodes_links, text_node_to_html_node
+from src.utils import extract_markdown_images, extract_markdown_links, split_nodes_delimiter, split_nodes_image, split_nodes_links, text_node_to_html_node, text_to_textnodes
 
 class TestUtils(unittest.TestCase):
     def test_func_text_node_to_html_node(self):
@@ -102,9 +102,9 @@ class TestUtils(unittest.TestCase):
         text_node1 = [TextNode("This is text with a `code block` word", "text")]
 
         with self.assertRaises(ValueError) as context:
-            split_nodes_delimiter(text_node1, "*", "italic")
+            split_nodes_delimiter(text_node1, "^", "italic")
 
-        self.assertEqual(str(context.exception), "There is no delimiter in this TextNode")
+        self.assertEqual(str(context.exception), "There is no ^ delimiter")
 
     def test_extract_markdown_images(self):
         text1 = "This is text with a ![rick roll](https://i.imgur.com/aKaOqIh.gif) and ![obi wan](https://i.imgur.com/fJRm4Vk.jpeg)"
@@ -123,14 +123,6 @@ class TestUtils(unittest.TestCase):
         self.assertEqual(expected_result2, test_case2)
         self.assertEqual(expected_result3, test_case3)
     
-    def test_extract_markdown_images_without_img(self):
-        text1 = "This is text with a `code block` word"
-
-        with self.assertRaises(ValueError) as context:
-            extract_markdown_images(text1)
-
-        self.assertEqual(str(context.exception), "There is no images here")
-    
     def test_extract_markdown_links(self):
         text1 = "This is text with a link [to boot dev](https://www.boot.dev) and [to youtube](https://www.youtube.com/@bootdotdev)"
         text2 = "This is text with a link [to boot dev](https://www.boot.dev)"
@@ -143,14 +135,6 @@ class TestUtils(unittest.TestCase):
 
         self.assertEqual(expected_result1, test_case1)
         self.assertEqual(expected_result2, test_case2) 
-    
-    def test_extract_markdown_images_without_links(self):
-        text1 = "This is text with a `code block` word"
-
-        with self.assertRaises(ValueError) as context:
-            extract_markdown_links(text1)
-
-        self.assertEqual(str(context.exception), "There is no links here")
 
     def test_split_node_links(self):
         text_node1 = TextNode(
@@ -252,6 +236,29 @@ class TestUtils(unittest.TestCase):
         self.assertEqual(expected_result3, test_case3)
         self.assertEqual(expected_result4, test_case4)
 
+    def test_text_to_textnodes(self):
+        text1 = "This is **text** with an *italic* word and a `code block` and an ![obi wan image](https://i.imgur.com/fJRm4Vk.jpeg) and a [link](https://boot.dev)"
+        text2 = ""
+
+        test_case1 = text_to_textnodes(text1)
+        test_case2 = text_to_textnodes(text2)
+
+        expected_result1 = [
+            TextNode("This is ", "text"),
+            TextNode("text", "bold"),
+            TextNode(" with an ", "text"),
+            TextNode("italic", "italic"),
+            TextNode(" word and a ", "text"),
+            TextNode("code block", "code"),
+            TextNode(" and an ", "text"),
+            TextNode("obi wan image", "img", "https://i.imgur.com/fJRm4Vk.jpeg"),
+            TextNode(" and a ", "text"),
+            TextNode("link", "link", "https://boot.dev"),
+        ]
+        expected_result2 = []
+
+        self.assertEqual(expected_result1, test_case1)
+        self.assertEqual(expected_result2, test_case2)
 
 if __name__ == "__main__":
     unittest.main()
