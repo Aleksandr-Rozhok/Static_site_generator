@@ -173,7 +173,38 @@ def markdown_to_blocks(markdown):
             temp_line += line.strip() + "\n"
 
     result.append(temp_line)
-        
-
     return result
+
+def block_to_block_type(markdown_block):
+    divided_markdown_block = markdown_block.split("\n")
+    if divided_markdown_block[-1] == "":
+        divided_markdown_block.pop()
+
+    if "#" in divided_markdown_block[0][0]:
+        return "heading"
+    elif divided_markdown_block[0][0:3] == "```":
+        return "code"
+    elif divided_markdown_block[0][0] == ">":
+        for line in divided_markdown_block:
+            line.strip()
+            if line[0] != ">":
+                raise ValueError("Every line must be a quote")
+            
+        return "quote"
+    elif divided_markdown_block[0][0] == "*" or divided_markdown_block[0][0] == "-":
+        for line in divided_markdown_block:
+            line.strip()
+            if line[0] != "*" and line[0] != "-":
+                raise ValueError("Every line must be an item of unordered list")
+            
+        return "unordered_list"
+    elif divided_markdown_block[0][0:2] == "1.":
+        for index in range(len(divided_markdown_block)):
+            divided_markdown_block[index].strip()
+            if divided_markdown_block[index][0] != str(index + 1):
+                raise ValueError("Every line must be an item of ordered list")
+            
+        return "ordered_list"
+    else:
+        return "paragraph"
     

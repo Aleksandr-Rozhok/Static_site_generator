@@ -1,7 +1,7 @@
 import unittest
 
 from src.textnode import TextNode
-from src.utils import extract_markdown_images, extract_markdown_links, markdown_to_blocks, split_nodes_delimiter, split_nodes_image, split_nodes_links, text_node_to_html_node, text_to_textnodes
+from src.utils import extract_markdown_images, extract_markdown_links, markdown_to_blocks, split_nodes_delimiter, split_nodes_image, split_nodes_links, text_node_to_html_node, text_to_textnodes, block_to_block_type
 
 class TestUtils(unittest.TestCase):
     def test_func_text_node_to_html_node(self):
@@ -294,6 +294,66 @@ class TestUtils(unittest.TestCase):
         self.assertEqual(expected_result1, test_case1)
         self.assertEqual(expected_result2, test_case2)
         self.assertEqual(expected_result3, test_case3)
+    
+    def test_block_to_block_type(self):
+        text1 = "### This is title"
+        text2 = "```some code```"
+        text3 = "> This is quote"
+        text4 = markdown_to_blocks("""* This is the first list item in a list block
+        * This is a list item
+        * This is another list item""")
+        text5 = markdown_to_blocks("""1. This is first element of list
+        2. This is second element of list
+        3. This is third element of list""")
+        text6 = "This is a paragraph of text. It has some **bold** and *italic* words inside of it."
+
+        test_case1 = block_to_block_type(text1)
+        test_case2 = block_to_block_type(text2)
+        test_case3 = block_to_block_type(text3)
+        test_case4 = block_to_block_type(text4[0])
+        test_case5 = block_to_block_type(text5[0])
+        test_case6 = block_to_block_type(text6)
+
+        expected_result1 = "heading"
+        expected_result2 = "code"
+        expected_result3 = "quote"
+        expected_result4 = "unordered_list"
+        expected_result5 = "ordered_list"
+        expected_result6 = "paragraph"
+
+        self.assertEqual(expected_result1, test_case1)
+        self.assertEqual(expected_result2, test_case2)
+        self.assertEqual(expected_result3, test_case3)
+        self.assertEqual(expected_result4, test_case4)
+        self.assertEqual(expected_result5, test_case5)
+        self.assertEqual(expected_result6, test_case6)
+
+    def test_every_line_in_block_type(self):
+        text1 = """> This is quote
+        > This is too quote
+        And this isn't a quote"""
+        text2 = """* This is the first list item in a list block
+        - This is a list item
+        . This is another list item"""
+        text3 = """1. This is first element of list
+        2. This is second element of list
+        4. This is third element of list"""
+
+        with self.assertRaises(ValueError) as context:
+            block_to_block_type(text1)
+
+        self.assertEqual(str(context.exception), "Every line must be a quote")
+
+        with self.assertRaises(ValueError) as context:
+            block_to_block_type(text2)
+
+        self.assertEqual(str(context.exception), "Every line must be an item of unordered list")
+
+        with self.assertRaises(ValueError) as context:
+            block_to_block_type(text3)
+
+        self.assertEqual(str(context.exception), "Every line must be an item of ordered list")
+
 
 if __name__ == "__main__":
     unittest.main()
