@@ -156,4 +156,24 @@ def text_to_textnodes(text):
     
     return totally_divided_nodes
 
+def markdown_to_blocks(markdown):
+    result = []
+    temp_line = ""
+
+    if not markdown:
+        return result
+
+    divided_markdown = markdown.split("\n") 
+
+    for line in divided_markdown:
+        if line == "":
+            result.append(temp_line)
+            temp_line = ""
+        else:
+            temp_line += line.strip() + "\n"
+
+    result.append(temp_line)
+        
+
+    return result
     

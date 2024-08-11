@@ -1,7 +1,7 @@
 import unittest
 
 from src.textnode import TextNode
-from src.utils import extract_markdown_images, extract_markdown_links, split_nodes_delimiter, split_nodes_image, split_nodes_links, text_node_to_html_node, text_to_textnodes
+from src.utils import extract_markdown_images, extract_markdown_links, markdown_to_blocks, split_nodes_delimiter, split_nodes_image, split_nodes_links, text_node_to_html_node, text_to_textnodes
 
 class TestUtils(unittest.TestCase):
     def test_func_text_node_to_html_node(self):
@@ -259,6 +259,41 @@ class TestUtils(unittest.TestCase):
 
         self.assertEqual(expected_result1, test_case1)
         self.assertEqual(expected_result2, test_case2)
+    
+    def test_markdown_to_blocks(self):
+        text1 = """# This is a heading
+
+        This is a paragraph of text. It has some **bold** and *italic* words inside of it.
+
+        * This is the first list item in a list block
+        * This is a list item
+        * This is another list item"""
+        
+        text2 = """### This is also heading
+
+        1. This is first element of list
+        2. This is second element of list
+        3. This is third element of list
+
+        The end of markdown document."""
+
+        text3 = ""
+
+        test_case1 = markdown_to_blocks(text1)
+        test_case2 = markdown_to_blocks(text2)
+        test_case3 = markdown_to_blocks(text3)
+
+        expected_result1 = ["# This is a heading\n", 
+            "This is a paragraph of text. It has some **bold** and *italic* words inside of it.\n", 
+            "* This is the first list item in a list block\n* This is a list item\n* This is another list item\n"]
+        expected_result2 = ["### This is also heading\n", 
+            "1. This is first element of list\n2. This is second element of list\n3. This is third element of list\n",
+            "The end of markdown document.\n"]
+        expected_result3 = []
+
+        self.assertEqual(expected_result1, test_case1)
+        self.assertEqual(expected_result2, test_case2)
+        self.assertEqual(expected_result3, test_case3)
 
 if __name__ == "__main__":
     unittest.main()
