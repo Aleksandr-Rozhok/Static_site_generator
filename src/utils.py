@@ -1,5 +1,5 @@
-import math
 from src.htmlnode import LeafNode
+from src.htmlnode import HTMLNode
 from enum import Enum
 import re
 
@@ -208,3 +208,52 @@ def block_to_block_type(markdown_block):
     else:
         return "paragraph"
     
+def heading_to_htmlnode(text):
+        leading_symbols = ""
+        heading_text = ""
+
+        match = re.match(r'^([^\w\s]+)(.*)', text)
+        if match:
+            leading_symbols = match.group(1)
+            heading_text = match.group(2).strip()
+        else:
+            leading_symbols = ''
+            heading_text = text.strip()
+
+        if len(leading_symbols) > 6 or len(leading_symbols) == 0:
+            raise ValueError("Incorrect title")
+        else:
+            return HTMLNode(f"h{len(leading_symbols)}", heading_text, None, None)
+    
+def markdown_to_html_node(markdown):
+    splitted_doc = markdown_to_blocks(markdown)
+
+    for item in splitted_doc:
+        print(item)
+        type_of_item = block_to_block_type(item)
+
+        if type_of_item == "heading":
+            print(heading_to_htmlnode(item))
+            return heading_to_htmlnode(item)
+        elif type_of_item == "paragraph":
+            return HTMLNode("p", item, None, None)
+        elif type_of_item == "code":
+            return HTMLNode("pre", None, [
+                HTMLNode("code", item, None, None)
+            ], None)
+        elif type_of_item == "quote":
+            return HTMLNode("blockquote", item, None, None)
+        elif type_of_item == "unordered_list":
+            return HTMLNode("ul", None, [
+                HTMLNode("li", item, None, None),
+                HTMLNode("li", item, None, None),
+                HTMLNode("li", item, None, None)
+            ], None)
+        elif type_of_item == "ordered_list":
+            return HTMLNode("ol", None, [
+                HTMLNode("li", item, None, None),
+                HTMLNode("li", item, None, None),
+                HTMLNode("li", item, None, None)
+            ], None)
+            
+    return splitted_doc

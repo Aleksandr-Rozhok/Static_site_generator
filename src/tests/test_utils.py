@@ -1,7 +1,20 @@
 import unittest
 
 from src.textnode import TextNode
-from src.utils import extract_markdown_images, extract_markdown_links, markdown_to_blocks, split_nodes_delimiter, split_nodes_image, split_nodes_links, text_node_to_html_node, text_to_textnodes, block_to_block_type
+from src.htmlnode import HTMLNode
+from src.utils import (
+    extract_markdown_images, 
+    extract_markdown_links, 
+    markdown_to_blocks, 
+    split_nodes_delimiter, 
+    split_nodes_image, 
+    split_nodes_links, 
+    text_node_to_html_node, 
+    text_to_textnodes, 
+    block_to_block_type, 
+    markdown_to_html_node,
+    heading_to_htmlnode
+    )
 
 class TestUtils(unittest.TestCase):
     def test_func_text_node_to_html_node(self):
@@ -353,6 +366,62 @@ class TestUtils(unittest.TestCase):
             block_to_block_type(text3)
 
         self.assertEqual(str(context.exception), "Every line must be an item of ordered list")
+    
+    # def test_markdown_to_html_node(self):
+    #     text1 = """# This is a heading
+
+    #     This is a paragraph of text. It has some **bold** and *italic* words inside of it.
+
+    #     * This is the first list item in a list block
+    #     * This is a list item
+    #     * This is another list item"""
+
+    #     test_case1 = markdown_to_html_node(text1)
+
+    #     expected_result1 = HTMLNode("div", None, [
+    #         HTMLNode("h1", "This is a heading\n", None, None),
+    #         HTMLNode("p", "This is a paragraph of text. It has some  and  words inside of it.\n\n", [
+    #             HTMLNode("b", "bold", None, None),
+    #             HTMLNode("i", "italic", None, None),
+    #         ], None),
+    #         HTMLNode("ul", None, [
+    #             HTMLNode("li", "This is the first list item in a list block\n", None, None),
+    #             HTMLNode("li", "This is a list item\n", None, None),
+    #             HTMLNode("li", "This is another list item\n", None, None),
+    #         ], None),
+    #     ], None)
+
+    #     self.assertEqual(expected_result1, test_case1)
+    
+    def test_heading_to_htmlnode(self):
+        text1 = "# First Title"
+        text2 = "## Second Title"
+        text3 = "###### Third Title"
+        text4 = "################### Non-existent title"
+        text5 = "Just text"
+
+        test_case1 = heading_to_htmlnode(text1)
+        test_case2 = heading_to_htmlnode(text2)
+        test_case3 = heading_to_htmlnode(text3)
+
+        expected_result1 = HTMLNode("h1", "First Title", None, None)
+        expected_result2 = HTMLNode("h2", "Second Title", None, None)
+        expected_result3 = HTMLNode("h6", "Third Title", None, None)
+
+        self.assertEqual(expected_result1, test_case1)
+        self.assertEqual(expected_result2, test_case2)
+        self.assertEqual(expected_result3, test_case3)
+
+        with self.assertRaises(ValueError) as context:
+            heading_to_htmlnode(text4)
+
+        self.assertEqual(str(context.exception), "Incorrect title")
+
+        with self.assertRaises(ValueError) as context:
+            heading_to_htmlnode(text5)
+
+        self.assertEqual(str(context.exception), "Incorrect title")
+
 
 
 if __name__ == "__main__":
