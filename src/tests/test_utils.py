@@ -13,7 +13,9 @@ from src.utils import (
     text_to_textnodes, 
     block_to_block_type, 
     markdown_to_html_node,
-    heading_to_htmlnode
+    heading_to_htmlnode,
+    any_type_to_htmlnode,
+    list_to_htmlnode
     )
 
 class TestUtils(unittest.TestCase):
@@ -367,31 +369,59 @@ class TestUtils(unittest.TestCase):
 
         self.assertEqual(str(context.exception), "Every line must be an item of ordered list")
     
-    # def test_markdown_to_html_node(self):
-    #     text1 = """# This is a heading
+    def test_markdown_to_html_node(self):
+        text1 = """# This is a heading
 
-    #     This is a paragraph of text. It has some **bold** and *italic* words inside of it.
+        This is a paragraph of text. It has some **bold** and *italic* words inside of it.
 
-    #     * This is the first list item in a list block
-    #     * This is a list item
-    #     * This is another list item"""
+        * This is the first list item in a list block
+        * This is a list item
+        * This is another list item"""
 
-    #     test_case1 = markdown_to_html_node(text1)
+        text2 = """## This is a small heading
 
-    #     expected_result1 = HTMLNode("div", None, [
-    #         HTMLNode("h1", "This is a heading\n", None, None),
-    #         HTMLNode("p", "This is a paragraph of text. It has some  and  words inside of it.\n\n", [
-    #             HTMLNode("b", "bold", None, None),
-    #             HTMLNode("i", "italic", None, None),
-    #         ], None),
-    #         HTMLNode("ul", None, [
-    #             HTMLNode("li", "This is the first list item in a list block\n", None, None),
-    #             HTMLNode("li", "This is a list item\n", None, None),
-    #             HTMLNode("li", "This is another list item\n", None, None),
-    #         ], None),
-    #     ], None)
+        This is a paragraph of text. It has some **bold** and *italic* words inside of it.
 
-    #     self.assertEqual(expected_result1, test_case1)
+        Also, we have a ```code```
+
+        1. This is the first list item in ordered list
+        2. This is a second list item in ordered list
+        3. This is another list item in ordered list"""
+
+        test_case1 = markdown_to_html_node(text1)
+        test_case2 = markdown_to_html_node(text2)
+
+        expected_result1 = HTMLNode("div", None, [
+            HTMLNode("h1", "This is a heading", None, None), 
+            HTMLNode("p", "This is a paragraph of text. It has some  and  words inside of it.", [
+                HTMLNode("b", "bold", None, None), 
+                HTMLNode("i", "italic", None, None)
+            ], None), 
+            HTMLNode("ul", None, [
+                HTMLNode("li", "This is the first list item in a list block", None, None), 
+                HTMLNode("li", "This is a list item", None, None), 
+                HTMLNode("li", "This is another list item", None, None)
+            ], None)
+        ], None)
+
+        expected_result2 = HTMLNode("div", None, [
+            HTMLNode("h2", "This is a small heading", None, None), 
+            HTMLNode("p", "This is a paragraph of text. It has some  and  words inside of it.", [
+                HTMLNode("b", "bold", None, None), 
+                HTMLNode("i", "italic", None, None)
+            ], None),
+            HTMLNode("p", "Also, we have a ", [
+                HTMLNode("code", "code", None, None)
+            ], None), 
+            HTMLNode("ol", None, [
+                HTMLNode("li", "This is the first list item in ordered list", None, None), 
+                HTMLNode("li", "This is a second list item in ordered list", None, None), 
+                HTMLNode("li", "This is another list item in ordered list", None, None)
+            ], None)
+        ], None)
+
+        self.assertEqual(expected_result1, test_case1)
+        self.assertEqual(expected_result2, test_case2)
     
     def test_heading_to_htmlnode(self):
         text1 = "# First Title"
@@ -422,6 +452,95 @@ class TestUtils(unittest.TestCase):
 
         self.assertEqual(str(context.exception), "Incorrect title")
 
+    def test_any_type_to_htmlnode(self):
+        text1 = "This is a paragraph of text. It has some **bold** and *italic* words inside of it."
+        text2 = "This is a paragraph of text. Without any children"
+
+        test_case1 = any_type_to_htmlnode(text1, "p")
+        test_case2 = any_type_to_htmlnode(text2, "p")
+
+        expected_result1 = HTMLNode("p", "This is a paragraph of text. It has some  and  words inside of it.", [
+            HTMLNode("b", "bold", None, None),
+            HTMLNode("i", "italic", None, None)
+        ], None)
+        expected_result2 = HTMLNode("p", "This is a paragraph of text. Without any children", None, None)
+
+        self.assertEqual(expected_result1, test_case1)
+        self.assertEqual(expected_result2, test_case2)
+
+    def test_list_to_htmlnode(self):
+        text1 =  """* This is the first list item in a list block
+         * This is a list item
+         * This is another list item with **bold** element"""
+        
+        text2 =  """* This is the first list item in a list block
+         * This is a list item
+         * This is also list item with *italic* and `code`
+         * This is another list item with **bold** element"""
+        
+        text3 =  """1. This is the first list item in a list block
+         2. This is a list item
+         3. This is also list item with *italic* and `code`
+         4. This is another list item with **bold** element"""
+        
+        text4 =  """1. 1. This is the first list item in a list block
+         2. 2. This is a list item
+         3. 3. This is also list item with *italic* and `code`
+         4. 4. This is another list item with **bold** element"""
+        
+        test_case1 = list_to_htmlnode(text1, "ul")
+        test_case2 = list_to_htmlnode(text2, "ul")
+        test_case3 = list_to_htmlnode(text3, "ol")
+        test_case4 = list_to_htmlnode(text4, "ol")
+
+        expected_result1 = HTMLNode("ul", None, [
+            HTMLNode("li", "This is the first list item in a list block", None, None),
+            HTMLNode("li", "This is a list item", None, None),
+            HTMLNode("li", "This is another list item with  element", [
+                HTMLNode("b", "bold", None, None),
+            ], None),
+        ], None)
+
+        expected_result2 = HTMLNode("ul", None, [
+            HTMLNode("li", "This is the first list item in a list block", None, None),
+            HTMLNode("li", "This is a list item", None, None),
+            HTMLNode("li", "This is also list item with  and ", [
+                HTMLNode("i", "italic", None, None),
+                HTMLNode("code", "code", None, None),
+            ], None),
+            HTMLNode("li", "This is another list item with  element", [
+                HTMLNode("b", "bold", None, None),
+            ], None),
+        ], None)
+
+        expected_result3 = HTMLNode("ol", None, [
+            HTMLNode("li", "This is the first list item in a list block", None, None),
+            HTMLNode("li", "This is a list item", None, None),
+            HTMLNode("li", "This is also list item with  and ", [
+                HTMLNode("i", "italic", None, None),
+                HTMLNode("code", "code", None, None),
+            ], None),
+            HTMLNode("li", "This is another list item with  element", [
+                HTMLNode("b", "bold", None, None),
+            ], None),
+        ], None)
+
+        expected_result4 = HTMLNode("ol", None, [
+            HTMLNode("li", "1. This is the first list item in a list block", None, None),
+            HTMLNode("li", "2. This is a list item", None, None),
+            HTMLNode("li", "3. This is also list item with  and ", [
+                HTMLNode("i", "italic", None, None),
+                HTMLNode("code", "code", None, None),
+            ], None),
+            HTMLNode("li", "4. This is another list item with  element", [
+                HTMLNode("b", "bold", None, None),
+            ], None),
+        ], None)
+
+        self.assertEqual(expected_result1, test_case1)
+        self.assertEqual(expected_result2, test_case2)
+        self.assertEqual(expected_result3, test_case3)
+        self.assertEqual(expected_result4, test_case4)
 
 
 if __name__ == "__main__":

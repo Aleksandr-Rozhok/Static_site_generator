@@ -23,7 +23,10 @@ class HTMLNode:
         return f"HTMLNode({self.tag}, {self.value}, {self.children}, {self.props})"
     
     def __eq__(self, node_obj):
-        if self.tag == node_obj.tag and self.value == node_obj.value and self.children == node_obj.children and self.props == node_obj.props:
+        if self.tag == node_obj.tag and self.value == node_obj.value:
+            if self.children:
+                return all(a == b for a, b in zip(self.children, node_obj.children))
+            
             return True
         else:
             return False

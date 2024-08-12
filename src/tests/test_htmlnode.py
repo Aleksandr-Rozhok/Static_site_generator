@@ -60,8 +60,35 @@ class TestHTMLNode(unittest.TestCase):
             "target": "_blank",
         })
 
+        node5 = HTMLNode("div", None, [
+            HTMLNode("h1", "This is a heading", None, None), 
+            HTMLNode("p", "This is a paragraph of text. It has some  and  words inside of it.", [
+                HTMLNode("b", "bold", None, None),
+                HTMLNode("i", "italic", None, None)
+            ], None), 
+            HTMLNode("ul", None, [
+                HTMLNode("li", "This is the first list item in a list block", None, None), 
+                HTMLNode("li", "This is a list item", None, None), 
+                HTMLNode("li", "This is another list item", None, None)
+            ], None)
+        ], None)
+
+        node6 = HTMLNode("div", None, [
+            HTMLNode("h1", "This is a heading", None, None), 
+            HTMLNode("p", "This is a paragraph of text. It has some  and  words inside of it.", [
+                HTMLNode("b", "bold", None, None),
+                HTMLNode("i", "italic", None, None)
+            ], None), 
+            HTMLNode("ul", None, [
+                HTMLNode("li", "This is the first list item in a list block", None, None), 
+                HTMLNode("li", "This is a list item", None, None), 
+                HTMLNode("li", "This is another list item", None, None)
+            ], None)
+        ], None)
+
         self.assertEqual(node, node2)
         self.assertEqual(node3, node4)
+        self.assertEqual(node5, node6)
     
     def test_not_eq(self):
         node = HTMLNode("h1", "Some Title", [HTMLNode("h2", "Some Paragraph !", None, {

@@ -148,8 +148,9 @@ def split_nodes_image(old_nodes):
 
 def text_to_textnodes(text):
     new_text_node = TextNode(text, TextTypeNode.text_type_text.value)
-    nodes_with_code = split_nodes_delimiter([new_text_node], "`", TextTypeNode.text_type_code.value)
-    nodes_with_bold_text = split_nodes_delimiter(nodes_with_code, "**", TextTypeNode.text_type_bold.value)
+    nodes_with_code1 = split_nodes_delimiter([new_text_node], "```", TextTypeNode.text_type_code.value)
+    nodes_with_code2 = split_nodes_delimiter(nodes_with_code1, "`", TextTypeNode.text_type_code.value)
+    nodes_with_bold_text = split_nodes_delimiter(nodes_with_code2, "**", TextTypeNode.text_type_bold.value)
     nodes_with_italic_text = split_nodes_delimiter(nodes_with_bold_text, "*", TextTypeNode.text_type_italic.value)
     nodes_with_img = split_nodes_image(nodes_with_italic_text)
     totally_divided_nodes = split_nodes_links(nodes_with_img)
@@ -224,36 +225,67 @@ def heading_to_htmlnode(text):
             raise ValueError("Incorrect title")
         else:
             return HTMLNode(f"h{len(leading_symbols)}", heading_text, None, None)
+
+def any_type_to_htmlnode(text, our_type):
+    list_of_textnodes = text_to_textnodes(text)
+    result = HTMLNode(our_type, "", [], None)
+
+    for item in list_of_textnodes:
+        item_to_leaf_node = text_node_to_html_node(item)
+        if not item_to_leaf_node.tag:
+            result.value += item_to_leaf_node.value
+        else:
+            result.children.append(HTMLNode(item_to_leaf_node.tag, item_to_leaf_node.value, None, item_to_leaf_node.props))
     
+    if not result.children:
+        result.children = None
+    
+    result.value = result.value.strip("\n")
+    return result
+
+def list_to_htmlnode(text, list_type):
+    list_of_textnodes = text.split("\n")
+    result = HTMLNode(list_type, "", [], None)
+
+    for item in list_of_textnodes:
+        if item == "":
+            pass
+        else:
+            prepared_item = ""
+            if list_type == "ul":
+                prepared_item = item.strip(" *")
+            else:
+                prepared_item = re.sub(r'^\d+\.\s', '', item.strip(), count=1)
+
+            result.children.append(any_type_to_htmlnode(prepared_item, "li"))
+
+    if not result.children:
+        result.children = None
+    if not result.value:
+        result.value = None
+
+    return result
+
 def markdown_to_html_node(markdown):
     splitted_doc = markdown_to_blocks(markdown)
+    result = HTMLNode("div", None, [], None)
 
     for item in splitted_doc:
-        print(item)
         type_of_item = block_to_block_type(item)
 
         if type_of_item == "heading":
-            print(heading_to_htmlnode(item))
-            return heading_to_htmlnode(item)
+            result.children.append(heading_to_htmlnode(item))
         elif type_of_item == "paragraph":
-            return HTMLNode("p", item, None, None)
+            result.children.append(any_type_to_htmlnode(item, "p"))
         elif type_of_item == "code":
-            return HTMLNode("pre", None, [
+            result.children.append(HTMLNode("pre", None, [
                 HTMLNode("code", item, None, None)
-            ], None)
+            ], None))
         elif type_of_item == "quote":
-            return HTMLNode("blockquote", item, None, None)
+            result.children.append(any_type_to_htmlnode(item, "blockquote"))
         elif type_of_item == "unordered_list":
-            return HTMLNode("ul", None, [
-                HTMLNode("li", item, None, None),
-                HTMLNode("li", item, None, None),
-                HTMLNode("li", item, None, None)
-            ], None)
+            result.children.append(list_to_htmlnode(item, "ul"))
         elif type_of_item == "ordered_list":
-            return HTMLNode("ol", None, [
-                HTMLNode("li", item, None, None),
-                HTMLNode("li", item, None, None),
-                HTMLNode("li", item, None, None)
-            ], None)
-            
-    return splitted_doc
+            result.children.append(list_to_htmlnode(item, "ol"))
+
+    return result
