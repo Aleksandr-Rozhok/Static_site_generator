@@ -33,7 +33,6 @@ def copy_static_struct(from_path, to_path):
     for filename in os.listdir(from_path):
         new_from_file_path = os.path.join(from_path, filename)
         new_to_file_path = os.path.join(to_path, filename)
-        print(new_from_file_path)
         
         if os.path.isfile(new_from_file_path) or os.path.islink(new_from_file_path):
             print(f"Copying {filename} from {new_from_file_path} into {new_to_file_path}...")
@@ -65,7 +64,6 @@ def generate_pages_recursive(dir_path_content, template_path, dest_dir_path):
     content_file = os.listdir(dir_path_content)
 
     for file in content_file:
-        print(file, os.path.isfile(os.path.join(dir_path_content, file)))
         if os.path.isfile(os.path.join(dir_path_content, file)):
             generate_page(os.path.join(dir_path_content, file), dest_dir_path, template_path)
         else:

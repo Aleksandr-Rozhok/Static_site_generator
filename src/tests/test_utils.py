@@ -1,7 +1,7 @@
 import unittest
 
 from src.textnode import TextNode
-from src.htmlnode import HTMLNode, LeafNode, ParentNode
+from src.htmlnode import LeafNode, ParentNode
 from src.utils import (
     extract_markdown_images, 
     extract_markdown_links, 
