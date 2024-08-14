@@ -372,104 +372,111 @@ class TestUtils(unittest.TestCase):
 
         self.assertEqual(str(context.exception), "Every line must be an item of ordered list")
     
-    # def test_markdown_to_html_node(self):
-    #     text1 = """# This is a heading
+    def test_markdown_to_html_node(self):
+        text1 = """# This is a heading
         
-    #     This is a paragraph of text. It has some **bold** and *italic* words inside of it.
+        This is a paragraph of text. It has some **bold** and *italic* words inside of it.
 
-    #     * This is the first list item in a list block
-    #     * This is a list item
-    #     * This is another list item"""
+        * This is the first list item in a list block
+        * This is a list item
+        * This is another list item"""
 
-    #     text2 = """## This is a small heading
+        text2 = """## This is a small heading
 
-    #     This is a paragraph of text. It has some **bold** and *italic* words inside of it.
+        This is a paragraph of text. It has some **bold** and *italic* words inside of it.
 
-    #     Also, we have a ```code```
+        Also, we have a ```code```
 
-    #     1. This is the first list item in ordered list
-    #     2. This is a second list item in ordered list
-    #     3. This is another list item in ordered list"""
+        1. This is the first list item in ordered list
+        2. This is a second list item in ordered list
+        3. This is another list item in ordered list"""
 
-    #     text3 = """This is a paragraph of text. It has some **bold** and *italic* words inside of it."""
+        text3 = """This is a paragraph of text. It has some **bold** and *italic* words inside of it."""
 
-    #     test_case1 = markdown_to_html_node(text1)
-    #     #test_case2 = markdown_to_html_node(text2)
-    #     #test_case3 = markdown_to_html_node(text3)
+        test_case1 = markdown_to_html_node(text1)
+        test_case2 = markdown_to_html_node(text2)
+        test_case3 = markdown_to_html_node(text3)
 
-    #     expected_result1 = ParentNode("div", [
-    #         ParentNode("h1", [
-    #             LeafNode("This is a heading")
-    #         ], None), 
-    #         ParentNode("p", [
-    #             LeafNode("This is a paragraph of text. It has some "), 
-    #             ParentNode("b", [
-    #                 LeafNode("bold")
-    #             ], None), 
-    #             LeafNode(" and "), 
-    #             ParentNode("i", [
-    #                 LeafNode("italic")
-    #             ], None), 
-    #             LeafNode(" words inside of it.")
-    #         ], None), 
-    #         ParentNode("ul", [
-    #             ParentNode("li", [
-    #                 LeafNode("This is the first list item in a list block")
-    #             ], None), 
-    #             ParentNode("li", [
-    #                 LeafNode("This is a list item")
-    #             ], None), 
-    #             ParentNode("li", [
-    #                 LeafNode("This is another list item")
-    #             ], None)
-    #         ], None)
-    #     ], None)
+        expected_result1 = ParentNode("div", [
+            ParentNode("h1", [
+                LeafNode("This is a heading")
+            ], None), 
+            ParentNode("p", [
+                LeafNode("This is a paragraph of text. It has some "), 
+                ParentNode("b", [
+                    LeafNode("bold")
+                ], None), 
+                LeafNode(" and "), 
+                ParentNode("i", [
+                    LeafNode("italic")
+                ], None), 
+                LeafNode(" words inside of it.\n")
+            ], None), 
+            ParentNode("ul", [
+                ParentNode("li", [
+                    LeafNode("This is the first list item in a list block")
+                ], None), 
+                ParentNode("li", [
+                    LeafNode("This is a list item")
+                ], None), 
+                ParentNode("li", [
+                    LeafNode("This is another list item")
+                ], None)
+            ], None)
+        ], None)
 
-    #     expected_result2 = ParentNode("div", [
-    #         ParentNode("h2", [
-    #             LeafNode("This is a small heading")
-    #         ], None), 
-    #         ParentNode("p", [
-    #             LeafNode("This is a paragraph of text. It has some  and  words inside of it.\n\n"), 
-    #             ParentNode("b", [
-    #                 LeafNode("bold")
-    #             ], None), 
-    #             ParentNode("i", [
-    #                 LeafNode("italic")
-    #             ], None)
-    #         ], None),
-    #         ParentNode("p", [
-    #             LeafNode("Also, we have a "),
-    #             ParentNode("code", [
-    #                 LeafNode("code")
-    #             ], None)
-    #         ], None), 
-    #         ParentNode("ol", [
-    #             ParentNode("li", [
-    #                 LeafNode("This is the first list item in ordered list")
-    #             ], None), 
-    #             ParentNode("li", [
-    #                 LeafNode("This is a second list item in ordered list")
-    #             ], None), 
-    #             ParentNode("li", [
-    #                 LeafNode("This is another list item in ordered list")
-    #             ], None)
-    #         ], None)
-    #     ], None)
+        expected_result2 = ParentNode("div", [
+            ParentNode("h2", [
+                LeafNode("This is a small heading")
+            ], None), 
+            ParentNode("p", [
+                LeafNode("This is a paragraph of text. It has some "), 
+                ParentNode("b", [
+                    LeafNode("bold")
+                ], None),
+                LeafNode(" and "), 
+                ParentNode("i", [
+                    LeafNode("italic")
+                ], None),
+                LeafNode(" words inside of it.\n")
+            ], None),
+            ParentNode("p", [
+                LeafNode("Also, we have a "),
+                ParentNode("code", [
+                    LeafNode("code")
+                ], None),
+                LeafNode("\n")
+            ], None), 
+            ParentNode("ol", [
+                ParentNode("li", [
+                    LeafNode("This is the first list item in ordered list")
+                ], None), 
+                ParentNode("li", [
+                    LeafNode("This is a second list item in ordered list")
+                ], None), 
+                ParentNode("li", [
+                    LeafNode("This is another list item in ordered list")
+                ], None)
+            ], None)
+        ], None)
 
-    #     expected_result3 = ParentNode("p", [
-    #         LeafNode("This is a paragraph of text. It has some  and  words inside of it.", None, None),
-    #         ParentNode("b", [
-    #             LeafNode("bold", None, None)
-    #         ], None),
-    #         ParentNode("i", [
-    #             LeafNode("italic", None, None)
-    #         ], None)
-    #     ], None)
-    #     print(test_case1)
-    #     self.assertEqual(expected_result1, test_case1)
-    #     # self.assertEqual(expected_result2, test_case2)
-    #     # self.assertEqual(expected_result3, test_case3)
+        expected_result3 = ParentNode("div", [
+            ParentNode("p", [
+                LeafNode("This is a paragraph of text. It has some ", None, None),
+                ParentNode("b", [
+                    LeafNode("bold", None, None)
+                ], None),
+                LeafNode(" and "),
+                ParentNode("i", [
+                    LeafNode("italic", None, None)
+                ], None),
+                LeafNode(" words inside of it.\n")
+            ], None)
+        ], None)
+            
+        self.assertEqual(expected_result1, test_case1)
+        self.assertEqual(expected_result2, test_case2)
+        self.assertEqual(expected_result3, test_case3)
     
     def test_heading_to_htmlnode(self):
         text1 = "# First Title"
