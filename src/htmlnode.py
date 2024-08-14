@@ -22,14 +22,15 @@ class HTMLNode:
     def __repr__(self):
         return f"HTMLNode({self.tag}, {self.value}, {self.children}, {self.props})"
     
-    def __eq__(self, node_obj):
-        if self.tag == node_obj.tag and self.value == node_obj.value:
-            if self.children:
-                return all(a == b for a, b in zip(self.children, node_obj.children))
-            
-            return True
-        else:
+    def __eq__(self, other):
+        if not isinstance(other, HTMLNode):
             return False
+        return (
+            self.tag == other.tag and
+            self.value == other.value and
+            self.props == other.props and
+            self.children == other.children
+        )
 
 
 class LeafNode(HTMLNode):
@@ -45,7 +46,7 @@ class LeafNode(HTMLNode):
         elif self.value and self.tag or self.value and not self.tag and self.props:
             value_keeper = self.value
             self.value = self.tag
-            self.tag = value_keeper        
+            self.tag = value_keeper
     
     def to_html(self):
         all_single_tags = [
@@ -53,7 +54,7 @@ class LeafNode(HTMLNode):
             "hr", "img", "input", "link", "meta",
             "param", "source", "track", "wbr"
             ]
-        
+    
         if not self.value:
             raise ValueError("All leaf nodes must have a value")
         elif not self.tag:
@@ -79,6 +80,7 @@ class ParentNode(HTMLNode):
             value_keeper = self.children
             self.children = self.tag
             self.tag = value_keeper
+            self.props = self.value
         
     def to_html(self):
         if not self.tag:
@@ -86,7 +88,10 @@ class ParentNode(HTMLNode):
         elif not self.children:
             raise ValueError("There not a children")
         else:
-            result_str = f"<{self.tag}>"
+            if not self.props:
+                result_str = f"<{self.tag}>"
+            else:
+                result_str = f"<{self.tag} {self.props_to_html()}>"
 
             for node in self.children:
                     result_str += node.to_html()
