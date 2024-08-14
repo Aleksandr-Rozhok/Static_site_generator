@@ -27,7 +27,7 @@ class TestUtils(unittest.TestCase):
         text_node3 = TextNode("This is a text node with type 'italic'", "italic")
         text_node4 = TextNode("This is a text node with type 'code'", "code")
         text_node5 = TextNode("This is a text node with type 'link'", "link", "https://www.boot.dev")
-        text_node6 = TextNode("This is a text node with type 'image'", "image", "images/sample.gif")
+        text_node6 = TextNode("This is a text node with type 'image'", "img", "images/sample.gif")
 
         test_case1 = text_node_to_leaf_node(text_node1).to_html()
         test_case2 = text_node_to_leaf_node(text_node2).to_html()

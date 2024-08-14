@@ -30,7 +30,7 @@ def text_node_to_leaf_node(text_node):
     elif text_node.text_type == TextTypeNode.text_type_image.value:
         return LeafNode("img", " ", {"src": text_node.url, "alt": text_node.text})
     elif not TextTypeNode.has_value(text_node.text_type):
-        raise TypeError(f"There no this type of text")
+        raise TypeError(f"There no your type of text")
 
 def split_nodes_delimiter(old_nodes, delimiter, text_type):
     result = []
@@ -76,7 +76,6 @@ def extract_markdown_links(text):
     result = []
 
     for index in range(0, len(matches_url_text)):
-        print(matches_url_text, matches_url)
         result.append((matches_url_text[index], matches_url[index]))
 
     return result
@@ -234,9 +233,7 @@ def heading_to_htmlnode(text):
         if len(leading_symbols) > 6 or len(leading_symbols) == 0:
             raise ValueError("Incorrect title")
         else:
-            return ParentNode(f"h{len(leading_symbols)}",[
-                LeafNode(heading_text)
-            ], None)
+            return any_type_to_parentnode(heading_text, f"h{len(leading_symbols)}")
 
 def blockquote_to_htmlnode(text):
     if text[:2] == "> ":
